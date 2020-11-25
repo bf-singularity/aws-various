@@ -14,7 +14,8 @@ def isCountryIp(ip,countryIpList):
         address = ipaddress.ip_network(ip)
     except:
         print("!!!! " + ip + " is not an IP address !!!!")
-    if any(address.overlaps(r) for r in countryIpList):
+        exit(0)
+    if any(address.overlaps(network) for network in countryIpList):
         return True
     return False
 
@@ -97,15 +98,20 @@ for sg in security_groups["SecurityGroups"]:
                             resultsDict["port"] = "port " + str(details["ToPort"])
                         resultsList.append(resultsDict)
             if details["Ipv6Ranges"]:
-                #do stuff if Ipv6Ranges exists
-                #print(sg["GroupName"] + " contains IPV6 addresses.")
-                #exit(0)
                 for ipRange in details["Ipv6Ranges"]:
+                    resultsDict = {}
                     if ipRange["CidrIpv6"] == "::/0":
                         continue #publicly accessible, not specific to country
-                    else: #this was not reached when running script, so no need to define anything specific here
-                        print(sg["GroupName"] + " needs your attention")
-                        exit(0)
+                    elif isCountryIp(ipRange["CidrIpv6"], countryIpv6List) == True: 
+                        #print(ipRange["CidrIpv6"])
+                        resultsDict["sg"] = sg["GroupName"]
+                        resultsDict["type"] = "ingress"
+                        resultsDict["cidr"] = ipRange["CidrIpv6"]
+                        if not "ToPort" in details:
+                            resultsDict["port"] = "all ports"
+                        else:
+                            resultsDict["port"] = "port " + str(details["ToPort"])
+                        resultsList.append(resultsDict)
     if sg["IpPermissionsEgress"]:
         #extract IP addresses for egress
         for details in sg["IpPermissionsEgress"]:
@@ -126,8 +132,22 @@ for sg in security_groups["SecurityGroups"]:
                         resultsList.append(resultsDict)
             if details["Ipv6Ranges"]: #this was not reached when running script, so no need to define anything specific here
                 #do stuff if Ipv6Ranges exists
-                print(sg["GroupName"] + " contains IPV6 addresses in egress.")
-                exit(0)
+                #print(sg["GroupName"] + " contains IPV6 addresses in egress.")
+                for ipRange in details["Ipv6Ranges"]:
+                    resultsDict = {}
+                    if ipRange["CidrIpv6"] == "::/0":
+                        continue #publicly accessible, not specific to country
+                    elif isCountryIp(ipRange["CidrIpv6"], countryIpv6List) == True:
+                        resultsDict["sg"] = sg["GroupName"]
+                        resultsDict["type"] = "egress"
+                        resultsDict["cidr"] = ipRange["CidrIpv6"]
+                        if not "FromPort" in details:
+                            resultsDict["port"] = "all ports"
+                        else:
+                            resultsDict["port"] = "port " + str(details["FromPort"])
+                        resultsList.append(resultsDict)
+
+                #exit(0)
     i += 1
 
 #print results
