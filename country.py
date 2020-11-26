@@ -96,7 +96,7 @@ for sg in security_groups["SecurityGroups"]:
                         if not "ToPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
-                            resultsDict["port"] = "port " + str(details["ToPort"])
+                            resultsDict["port"] = str(details["ToPort"])
                         resultsList.append(resultsDict)
             if details["Ipv6Ranges"]:
                 for ipRange in details["Ipv6Ranges"]:
@@ -112,7 +112,7 @@ for sg in security_groups["SecurityGroups"]:
                         if not "ToPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
-                            resultsDict["port"] = "port " + str(details["ToPort"])
+                            resultsDict["port"] = str(details["ToPort"])
                         resultsList.append(resultsDict)
     if sg["IpPermissionsEgress"]:
         #extract IP addresses for egress
@@ -131,7 +131,7 @@ for sg in security_groups["SecurityGroups"]:
                         if not "FromPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
-                            resultsDict["port"] = "port " + str(details["FromPort"])
+                            resultsDict["port"] = str(details["FromPort"])
                         resultsList.append(resultsDict)
             if details["Ipv6Ranges"]: #this was not reached when running script, so no need to define anything specific here
                 #do stuff if Ipv6Ranges exists
@@ -148,7 +148,7 @@ for sg in security_groups["SecurityGroups"]:
                         if not "FromPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
-                            resultsDict["port"] = "port " + str(details["FromPort"])
+                            resultsDict["port"] = str(details["FromPort"])
                         resultsList.append(resultsDict)
 
                 #exit(0)
@@ -161,27 +161,29 @@ if not resultsList:
 
 csvString = ""
 for result in resultsList:
+
+    #report to console
+    if result["type"] == "ingress":
+        if result["protocol"] == "icmp":
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections from " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")    
+        else:
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections on port " + result["port"] + " from " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")
+    else:
+        if result["protocol"] == "icmp":
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections to " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")   
+        else:
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections from port " + result["port"] + " to " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")
+    
     #csv reporting
     csvString += args.region + ","
     csvString += result["sg"] + ","
     csvString += result["type"] + ","
-    csvString += result["protocol"] + ","
-
-    if result["type"] == "ingress":
-        if result["protocol"] == "icmp":
-            csvString += "N/A,"
-            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections from " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")    
-        else:
-            csvString += result["port"] + ","
-            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections on " + result["port"] + " from " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")
+    if result["protocol"] == "icmp":
+        csvString += "icmp,N/A,"
+    elif result["protocol"] == "-1":
+        csvString += "all,all ports,"
     else:
-        if result["protocol"] == "icmp":
-            csvString += "N/A,"
-            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections to " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")   
-        else:
-            csvString += result["port"] + ","
-            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections from " + result["port"] + " to " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")
-
+        csvString += result["protocol"] + "," + result["port"] + ","
     csvString += result["cidr"] + "\n"
 
 #Write to CSV file
@@ -196,10 +198,3 @@ try:
 
 except OSError:
     print("Unable to create file %s" % csvFile)
-
-
-
-
-
-    
-    
