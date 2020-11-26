@@ -92,6 +92,7 @@ for sg in security_groups["SecurityGroups"]:
                         resultsDict["sg"] = sg["GroupName"]
                         resultsDict["type"] = "ingress"
                         resultsDict["cidr"] = ipRange["CidrIp"]
+                        resultsDict["protocol"] = details["IpProtocol"]
                         if not "ToPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
@@ -107,6 +108,7 @@ for sg in security_groups["SecurityGroups"]:
                         resultsDict["sg"] = sg["GroupName"]
                         resultsDict["type"] = "ingress"
                         resultsDict["cidr"] = ipRange["CidrIpv6"]
+                        resultsDict["protocol"] = details["IpProtocol"]
                         if not "ToPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
@@ -125,6 +127,7 @@ for sg in security_groups["SecurityGroups"]:
                         resultsDict["sg"] = sg["GroupName"]
                         resultsDict["type"] = "egress"
                         resultsDict["cidr"] = ipRange["CidrIp"]
+                        resultsDict["protocol"] = details["IpProtocol"]
                         if not "FromPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
@@ -141,6 +144,7 @@ for sg in security_groups["SecurityGroups"]:
                         resultsDict["sg"] = sg["GroupName"]
                         resultsDict["type"] = "egress"
                         resultsDict["cidr"] = ipRange["CidrIpv6"]
+                        resultsDict["protocol"] = details["IpProtocol"]
                         if not "FromPort" in details:
                             resultsDict["port"] = "all ports"
                         else:
@@ -155,8 +159,47 @@ print("")
 if not resultsList:
     print("No security groups found that define IP CIDRs from the country you specified")
 
+csvString = ""
 for result in resultsList:
+    #csv reporting
+    csvString += args.region + ","
+    csvString += result["sg"] + ","
+    csvString += result["type"] + ","
+    csvString += result["protocol"] + ","
+
     if result["type"] == "ingress":
-        print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " connections on " + result["port"] + " from " + result["cidr"] + ", which is CIDR belonging to " + country + ".")
+        if result["protocol"] == "icmp":
+            csvString += "N/A,"
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections from " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")    
+        else:
+            csvString += result["port"] + ","
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections on " + result["port"] + " from " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")
     else:
-        print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " connections from " + result["port"] + " to " + result["cidr"] + ", which is CIDR belonging to " + country + ".")
+        if result["protocol"] == "icmp":
+            csvString += "N/A,"
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections to " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")   
+        else:
+            csvString += result["port"] + ","
+            print("Security group \"" + result["sg"] + "\" allows " + result["type"] + " " + result["protocol"] + " connections from " + result["port"] + " to " + result["cidr"] + ", which is a CIDR belonging to " + country + ".")
+
+    csvString += result["cidr"] + "\n"
+
+#Write to CSV file
+csvFile = "countryResults.csv"
+try:
+    with open(csvFile,"a") as outFile:
+        if outFile.tell() == 0: #if the file is empty
+            outFile.write("Region,Security Group,Type,Protocol,Port,CIDR\n")
+            outFile.write(csvString)
+        else:
+            outFile.write(csvString)
+
+except OSError:
+    print("Unable to create file %s" % csvFile)
+
+
+
+
+
+    
+    
