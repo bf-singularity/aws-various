@@ -5,6 +5,7 @@ Outputs to console.
 import boto3
 import sys
 import json
+import argparse
 
 # simulate assuming the given AWS role as the current user
 def test_for_allow(profile, arn, role):
@@ -17,16 +18,19 @@ def test_for_allow(profile, arn, role):
         else:
             return False, []
 
-try:
-    role = sys.argv[1]
-except:
-    role = "arn:aws:iam::199054426378:role/CrossAccountTestPolicy"
+#Parse command line arguments    
+parser = argparse.ArgumentParser()
+parser.add_argument("--profile",help="The AWS profile to run against")
+parser.add_argument("--role",help="The IAM role to attempt to assume")
+arguments = parser.parse_args()
 
-try:
-    profile = sys.argv[2]
-except:
-    profile = "default"
+if not arguments.profile:
+    arguments.profile = "default"
+if not arguments.role:
+    arguments.role = "arn:aws:iam::199054426378:role/CrossAccountTestPolicy"
 
+profile = arguments.profile
+role = arguments.role
 #get users
 session = boto3.Session(profile_name=profile, region_name="us-east-1")
 client = session.client("iam")
