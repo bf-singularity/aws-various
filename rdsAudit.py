@@ -28,6 +28,7 @@ for region in response["Regions"]:
 
 reportString = "AWS Account ID,Region, RDS Instance, Backup Retention Period, Multi-AZ,Auto-Minor-Version Upgrade"
 for region in regions:
+    session = boto3.Session(profile_name=profile, region_name=region)
     print("[*] Querying region " + region)
     client=session.client("rds")
     response = client.describe_db_instances()
