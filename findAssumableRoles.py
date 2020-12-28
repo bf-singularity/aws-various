@@ -18,6 +18,7 @@ try:
     searchAccount = sys.argv[1] ##the AWS account ID to search for
 except:
     print("Provide an AWS Account ID to search the policies for")
+    exit(0)
 
 try:
     profile = sys.argv[2]
