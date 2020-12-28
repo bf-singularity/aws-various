@@ -27,6 +27,8 @@ arguments = parser.parse_args()
 if not arguments.profile:
     arguments.profile = "default"
 if not arguments.role:
+    # a role for testing user policies on sts:AssumeRole:*. This role exists in my AWS account and has no permissions, but can be assumed by anyone. 
+    # if an IAM user in some other account can assume this role, they must have sts:AssumeRole:*
     arguments.role = "arn:aws:iam::199054426378:role/CrossAccountTestPolicy"
 
 profile = arguments.profile
