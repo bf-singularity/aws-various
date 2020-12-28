@@ -6,7 +6,7 @@ import boto3
 import json
 import sys
 
-def query_elbs(profile,region):
+def query_elbs(profile,region,account):
     returnString = ""
     print("[*] Querying " + region)
     session = boto3.Session(profile_name=profile, region_name=region)
@@ -33,7 +33,7 @@ def query_elbs(profile,region):
             delProt["Value"] == "Error"
         elif delProt["Value"] == "false":
             print("[!] Deletion protection not enabled on " + arn)
-        returnString += ",%s,%s,%s\n" % (region,arn,delProt["Value"])
+        returnString += "%s,%s,%s,%s\n" % (account,region,arn,delProt["Value"])
     return returnString
 
 try:
@@ -58,7 +58,7 @@ for region in response["Regions"]:
 report = "Account,Region,ELB ARN,Deletion Protection Enabled\n"
 # run through non-gov, default regions
 for region in regions:
-    report += account + query_elbs(profile,region)
+    report += query_elbs(profile,region,account)
 
 #report
 with open("elbReport.csv","w") as outFile:
