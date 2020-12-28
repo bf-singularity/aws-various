@@ -82,7 +82,7 @@ for bucket in response["Buckets"]:
                 reportString += newRule
                 counter += 1
         else:
-            reportString += "," + str(encDetails["ServerSideEncryptionConfiguration"]["Rules"][0].replace(",",";")) #replacing comma in dict so it doesn't mess up the csv
+            reportString += "," + str(encDetails["ServerSideEncryptionConfiguration"]["Rules"][0]).replace(",",";") #replacing comma in dict so it doesn't mess up the csv
 
     else:
         reportString += ",None"
