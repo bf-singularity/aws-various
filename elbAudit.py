@@ -58,7 +58,7 @@ for region in response["Regions"]:
 report = "Account,Region,ELB ARN,Deletion Protection Enabled\n"
 # run through non-gov, default regions
 for region in regions:
-    report += account + query_elbs(region)
+    report += account + query_elbs(profile,region)
 
 #report
 with open("elbReport.csv","w") as outFile:
