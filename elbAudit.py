@@ -61,5 +61,5 @@ for region in regions:
     report += query_elbs(profile,region,account)
 
 #report
-with open("elbReport.csv","w") as outFile:
+with open("elbAudit.csv","w") as outFile:
     outFile.write(report)
