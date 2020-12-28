@@ -20,8 +20,7 @@ def test_for_allow(profile, arn, role):
 try:
     role = sys.argv[1]
 except:
-    print("Provide an AWS role ARN to attempt to assume")
-    exit(0)
+    role = "arn:aws:iam::199054426378:role/CrossAccountTestPolicy"
 
 try:
     profile = sys.argv[2]
